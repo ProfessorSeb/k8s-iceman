@@ -8,7 +8,8 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app.kubernetes.io/name: kagent-ui
+    app.kubernetes.io/name: kagent
+    app.kubernetes.io/component: ui
   ports:
     - name: ui
       port: 8080
