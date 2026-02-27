@@ -1,0 +1,22 @@
+# Copy this to terraform.tfvars and fill in values
+# The BIG-IP password is stored in Vault at secret/f5/bigip
+
+bigip_host     = "172.16.10.10"
+bigip_username = "admin"
+# bigip_password = ""  # Set via: export TF_VAR_bigip_password=$(vault kv get -field=password secret/f5/bigip)
+
+# Talos k8s nodes
+k8s_nodes = {
+  "talos-cp"     = "172.16.10.157"
+  "talos-worker" = "172.16.10.160"
+}
+
+# VIP assignments
+vip_argocd = "172.16.20.60"
+vip_vault  = "172.16.20.61"
+vip_kagent = "172.16.20.62"
+
+# NodePorts (must match the K8s service NodePort values)
+nodeport_argocd = 30443
+nodeport_vault  = 30820
+nodeport_kagent = 30808

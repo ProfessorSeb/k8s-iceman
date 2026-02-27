@@ -60,10 +60,23 @@ k8s-iceman/
 │   ├── kagent/values.yaml           # References Vault-managed secret
 │   ├── agentgateway-crds/values.yaml
 │   └── agentgateway/values.yaml
-└── manifests/                        # Raw Kubernetes manifests
-    └── vault-config/
-        ├── cluster-secret-store.yaml # ClusterSecretStore -> Vault
-        └── external-secret-kagent.yaml # ExternalSecret for LLM API key
+├── manifests/                        # Raw Kubernetes manifests
+│   ├── vault-config/
+│   │   ├── cluster-secret-store.yaml # ClusterSecretStore -> Vault
+│   │   └── external-secret-kagent.yaml # ExternalSecrets for LLM API keys
+│   └── service-nodeports/           # NodePort services for F5 BIG-IP
+│       ├── argocd-nodeport.yaml
+│       ├── vault-nodeport.yaml
+│       └── kagent-nodeport.yaml
+└── terraform/                        # Infrastructure as Code
+    └── f5-bigip/                    # F5 BIG-IP VIP configuration
+        ├── main.tf                  # Provider config
+        ├── variables.tf             # VIPs, NodePorts, node IPs
+        ├── nodes.tf                 # K8s Talos nodes
+        ├── monitors.tf              # Health monitors
+        ├── pools.tf                 # LTM pools + attachments
+        ├── virtual_servers.tf       # VIPs (172.16.20.60-80)
+        └── outputs.tf               # VIP URLs
 ```
 
 ## Component Versions
@@ -141,15 +154,23 @@ kubectl get secret kagent-llm-credentials -n kagent
 
 ### Access UIs
 
+Services are exposed via F5 BIG-IP VIPs on the `172.16.20.x` network:
+
+| Service | VIP URL | Credentials |
+|---|---|---|
+| Argo CD | `https://172.16.20.60` | user: `admin`, password: see below |
+| Vault | `http://172.16.20.61:8200` | root token from vault-init |
+| kagent | `http://172.16.20.62:8080` | n/a |
+
 ```bash
-# Argo CD (https://localhost:8443, user: admin)
-kubectl port-forward svc/argocd-server -n argocd 8443:443
+# Get Argo CD admin password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d && echo
+```
 
-# Vault (http://localhost:8200)
-kubectl port-forward -n vault svc/vault-ui 8200:8200
-
-# kagent (http://localhost:8080)
+**Fallback (port-forward):**
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8443:443
+kubectl port-forward -n vault svc/vault 8200:8200
 kubectl port-forward -n kagent svc/kagent-ui 8080:8080
 ```
 
@@ -178,6 +199,47 @@ kubectl exec -n vault vault-0 -- env VAULT_TOKEN=<token> \
 1. Update the secret in Vault (same command as above)
 2. ESO refreshes automatically (every 1h by default, configurable in `external-secret-kagent.yaml`)
 3. Restart the consuming pod to pick up the new secret
+
+## F5 BIG-IP Load Balancing
+
+External access to cluster services is provided by an F5 BIG-IP (`172.16.10.10`) using VIPs on the `172.16.20.60-80` range. Managed via Terraform.
+
+### VIP Assignments
+
+| VIP | Port | Service | NodePort |
+|---|---|---|---|
+| `172.16.20.60` | 443 | Argo CD UI | 30443 |
+| `172.16.20.61` | 8200 | Vault UI | 30820 |
+| `172.16.20.62` | 8080 | kagent UI | 30808 |
+
+### Terraform Setup
+
+F5 BIG-IP credentials are stored in Vault at `secret/f5/bigip`.
+
+```bash
+cd terraform/f5-bigip
+
+# Pull password from Vault
+export TF_VAR_bigip_password=$(kubectl exec -n vault vault-0 -- \
+  env VAULT_TOKEN=<token> vault kv get -field=password secret/f5/bigip)
+
+terraform init
+terraform plan
+terraform apply
+```
+
+### Architecture
+
+```
+Client ──> F5 BIG-IP VIP (172.16.20.60:443)
+               │ (automap SNAT)
+               ├──> talos-cp:30443     (172.16.10.157)
+               └──> talos-worker:30443 (172.16.10.160)
+                        │
+                    K8s NodePort Service
+                        │
+                    argocd-server pod
+```
 
 ## Making Changes (GitOps Workflow)
 
