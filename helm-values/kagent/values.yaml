@@ -1,17 +1,25 @@
 # kagent - Kubernetes-native AI Agent Framework
 # Docs: https://kagent.dev
 #
-# LLM API key is managed by Vault + External Secrets Operator.
+# LLM API keys are managed by Vault + External Secrets Operator.
 # The ExternalSecret "kagent-llm-credentials" creates a K8s Secret
-# with the key "api-key" pulled from Vault path: secret/kagent/llm
+# with all keys pulled from Vault path: secret/kagent/llm
 
-# Default LLM provider
+# LLM Providers - OpenAI, xAI, and Anthropic configured
 providers:
   default: openAI
   openAI:
     existingSecret:
       name: kagent-llm-credentials
-      key: api-key
+      key: openai-api-key
+  xAI:
+    existingSecret:
+      name: kagent-llm-credentials
+      key: xai-api-key
+  anthropic:
+    existingSecret:
+      name: kagent-llm-credentials
+      key: anthropic-api-key
 
 # Database (default: SQLite with vector support)
 database:
