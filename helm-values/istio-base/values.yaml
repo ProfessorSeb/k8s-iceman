@@ -1,0 +1,3 @@
+# Istio Base - CRDs and cluster-scoped resources
+# No special values needed for ambient mode at this layer
+defaultRevision: default

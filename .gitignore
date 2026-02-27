@@ -1,0 +1,16 @@
+# Secrets - never commit actual secrets
+*.secret
+*.key
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/

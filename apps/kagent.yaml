@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kagent
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: ghcr.io/kagent-dev/kagent/helm
+      chart: kagent
+      targetRevision: v0.7.19
+      helm:
+        releaseName: kagent
+        valueFiles:
+          - $values/helm-values/kagent/values.yaml
+    - repoURL: https://github.com/ProfessorSeb/k8s-iceman.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kagent
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

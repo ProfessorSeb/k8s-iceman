@@ -1,0 +1,10 @@
+# Ztunnel - Zero-Trust Tunnel (L4 node proxy DaemonSet)
+# Provides mTLS and L4 networking for ambient mesh
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

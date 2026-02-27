@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: agentgateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: ghcr.io/kgateway-dev/charts
+      chart: agentgateway
+      targetRevision: v2.2.1
+      helm:
+        releaseName: agentgateway
+        valueFiles:
+          - $values/helm-values/agentgateway/values.yaml
+    - repoURL: https://github.com/ProfessorSeb/k8s-iceman.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: agentgateway-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

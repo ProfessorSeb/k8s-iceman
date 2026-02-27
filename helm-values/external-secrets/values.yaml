@@ -1,0 +1,16 @@
+# External Secrets Operator
+# Bridges Vault secrets to Kubernetes Secrets
+# Docs: https://external-secrets.io
+
+replicaCount: 1
+
+installCRDs: true
+
+webhook:
+  create: true
+
+certController:
+  create: true
+
+serviceAccount:
+  create: true

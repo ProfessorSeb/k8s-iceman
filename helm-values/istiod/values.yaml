@@ -1,0 +1,22 @@
+# Istiod - Istio Control Plane (Ambient Mode)
+# Profile: ambient - enables sidecar-less mesh with ztunnel
+profile: ambient
+
+# Mesh configuration
+meshConfig:
+  # Enable access logging for observability
+  accessLogFile: /dev/stdout
+  # Default mesh-wide settings
+  defaultConfig:
+    # Enable telemetry
+    holdApplicationUntilProxyStarts: false
+
+# Pilot (istiod) configuration
+pilot:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi

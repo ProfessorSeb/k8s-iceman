@@ -1,0 +1,8 @@
+# Agentgateway - AI-native data plane proxy for agentic AI
+# Docs: https://agentgateway.dev
+# Supports: MCP, A2A, LLM routing, Gateway API
+
+# Controller configuration
+controller:
+  image:
+    pullPolicy: IfNotPresent

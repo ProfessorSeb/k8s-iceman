@@ -1,0 +1,13 @@
+# Istio CNI - Node agent for ambient traffic redirection
+# Profile: ambient - configures CNI for ambient mesh mode
+profile: ambient
+
+# CNI configuration
+cni:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi

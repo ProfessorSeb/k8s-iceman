@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-cni
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://istio-release.storage.googleapis.com/charts
+      chart: cni
+      targetRevision: 1.29.0
+      helm:
+        releaseName: istio-cni
+        valueFiles:
+          - $values/helm-values/istio-cni/values.yaml
+    - repoURL: https://github.com/ProfessorSeb/k8s-iceman.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
