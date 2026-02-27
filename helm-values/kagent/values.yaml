@@ -2,24 +2,12 @@
 # Docs: https://kagent.dev
 #
 # LLM API keys are managed by Vault + External Secrets Operator.
-# The ExternalSecret "kagent-llm-credentials" creates a K8s Secret
-# with all keys pulled from Vault path: secret/kagent/llm
+# ESO creates secrets: kagent-openai, kagent-xai, kagent-anthropic
+# matching the names the kagent chart expects.
 
-# LLM Providers - OpenAI, xAI, and Anthropic configured
+# LLM Providers
 providers:
   default: openAI
-  openAI:
-    existingSecret:
-      name: kagent-llm-credentials
-      key: openai-api-key
-  xAI:
-    existingSecret:
-      name: kagent-llm-credentials
-      key: xai-api-key
-  anthropic:
-    existingSecret:
-      name: kagent-llm-credentials
-      key: anthropic-api-key
 
 # Database (default: SQLite with vector support)
 database:
